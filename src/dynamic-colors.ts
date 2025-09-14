@@ -19,7 +19,7 @@ function findDesiredChromaByTone(
     byDecreasingTone: boolean
   ): number {
     let answer = tone;
-    let closestToChroma = new HueChromaTone(hue, chroma, tone);
+    let closestToChroma = HueChromaTone.from(hue, chroma, tone);
 
     if (closestToChroma.chroma < chroma) {
       let chromaPeak = closestToChroma.chroma;
@@ -27,7 +27,7 @@ function findDesiredChromaByTone(
       while (closestToChroma.chroma < chroma) {
         answer += byDecreasingTone ? -1.0 : 1.0;
 
-        const potentialSolution = new HueChromaTone(hue, chroma, answer);
+        const potentialSolution = HueChromaTone.from(hue, chroma, answer);
         if (chromaPeak > potentialSolution.chroma) break;
         if (Math.abs(potentialSolution.chroma - chroma) < 0.4) break;
 

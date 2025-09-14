@@ -53,7 +53,7 @@ class TonalPalette {
   /** Create the "key color" at ~T50 with best chroma match */
   static createKeyColor(hue: number, chroma: number): HueChromaTone {
     const startTone = 50;
-    let smallestDeltaHct = new HueChromaTone(hue, chroma, startTone);
+    let smallestDeltaHct = HueChromaTone.from(hue, chroma, startTone);
     let smallestDelta = Math.abs(smallestDeltaHct.chroma - chroma);
 
     for (let delta = 1; delta < 50; delta++) {
@@ -61,14 +61,14 @@ class TonalPalette {
         return smallestDeltaHct;
       }
 
-      const hctAdd = new HueChromaTone(hue, chroma, startTone + delta);
+      const hctAdd = HueChromaTone.from(hue, chroma, startTone + delta);
       const addDelta = Math.abs(hctAdd.chroma - chroma);
       if (addDelta < smallestDelta) {
         smallestDelta = addDelta;
         smallestDeltaHct = hctAdd;
       }
 
-      const hctSub = new HueChromaTone(hue, chroma, startTone - delta);
+      const hctSub = HueChromaTone.from(hue, chroma, startTone - delta);
       const subDelta = Math.abs(hctSub.chroma - chroma);
       if (subDelta < smallestDelta) {
         smallestDelta = subDelta;
@@ -86,7 +86,7 @@ class TonalPalette {
     if (this.cache.has(tone)) {
       return this.cache.get(tone)!;
     }
-    const hct = new HueChromaTone(this.hue, this.chroma, tone).toInt();
+    const hct = HueChromaTone.from(this.hue, this.chroma, tone).toInt();
     this.cache.set(tone, hct);
     return hct;
   }
@@ -95,7 +95,7 @@ class TonalPalette {
     if (this.cache.has(tone)) {
       return HueChromaTone.fromColor(Color.fromInt(this.cache.get(tone)!));
     }
-    return new HueChromaTone(this.hue, this.chroma, tone);
+    return HueChromaTone.from(this.hue, this.chroma, tone);
   }
 }
 

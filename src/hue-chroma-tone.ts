@@ -1,72 +1,107 @@
+import { Cam16 } from "./cam16";
 import Color from "./color";
+import { HctSolver } from "./hue-chroma-tone-solver";
+import { ColorUtils } from "./utilities";
+import { ViewingConditions } from "./viewing-conditions";
 
 class HueChromaTone {
-  hue: number;
-  chroma: number;
-  tone: number;
+  private _hue: number;
+  private _chroma: number;
+  private _tone: number;
+  private _argb: number;
 
-  constructor(hue: number, chroma: number, tone: number) {
-    this.hue = hue;
-    this.chroma = chroma;
-    this.tone = tone;
+  private constructor(argb: number) {
+    this._argb = argb;
+    const cam16 = Cam16.fromInt(argb);
+    this._hue = cam16.hue;
+    this._chroma = cam16.chroma;
+    this._tone = ColorUtils.lstarFromArgb(argb);
   }
 
-  static fromColor(color: Color): HueChromaTone {
-    // Normalize to [0, 1]
-    const r = color.red / 255;
-    const g = color.green / 255;
-    const b = color.blue / 255;
-
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    const delta = max - min;
-
-    // Hue
-    let hue = 0;
-    if (delta !== 0) {
-      if (max === r) {
-        hue = ((g - b) / delta) % 6;
-      } else if (max === g) {
-        hue = (b - r) / delta + 2;
-      } else {
-        hue = (r - g) / delta + 4;
-      }
-      hue *= 60;
-      if (hue < 0) hue += 360;
-    }
-
-    // Chroma = difference between max and min
-    const chroma = delta * 100; // scaled up to feel closer to Dart’s values
-
-    // Tone = perceived lightness
-    const tone = ((max + min) / 2) * 100;
-
-    return new HueChromaTone(hue, chroma, tone);
+  /** Create HCT from hue/chroma/tone */
+  static from(hue: number, chroma: number, tone: number): HueChromaTone {
+    const argb = HctSolver.solveToInt(hue, chroma, tone);
+    return new HueChromaTone(argb);
   }
 
-  /** ARGB -> HCT */
+  /** Create HCT from an ARGB int */
   static fromInt(argb: number): HueChromaTone {
-    // Extract channels
-    const a = (argb >> 24) & 0xff;
-    const r = (argb >> 16) & 0xff;
-    const g = (argb >> 8) & 0xff;
-    const b = argb & 0xff;
-
-    // Use fromColor for now
-    return HueChromaTone.fromColor(new Color(r, g, b));
+    return new HueChromaTone(argb);
   }
 
-  /** ARGB conversion (naive) */
+  /** Create HCT from a Color object */
+  static fromColor(color: Color): HueChromaTone {
+    // Force alpha=255
+    const argb = (0xff << 24) | color.toInt();
+    return new HueChromaTone(argb);
+  }
+
   toInt(): number {
-    // This is not perceptual — just a stub until HctSolver is ported.
-    const r = Math.round((this.tone / 100) * 255);
-    const g = Math.round((this.tone / 100) * 255);
-    const b = Math.round((this.tone / 100) * 255);
-    return (255 << 24) | (r << 16) | (g << 8) | b;
+    return this._argb;
   }
 
-  static copyWithTone(hct: HueChromaTone, newTone: number): HueChromaTone {
-    return new HueChromaTone(hct.hue, hct.chroma, newTone);
+  get hue(): number {
+    return this._hue;
+  }
+
+  set hue(newHue: number) {
+    this._argb = HctSolver.solveToInt(newHue, this._chroma, this._tone);
+    const cam16 = Cam16.fromInt(this._argb);
+    this._hue = cam16.hue;
+    this._chroma = cam16.chroma;
+    this._tone = ColorUtils.lstarFromArgb(this._argb);
+  }
+
+  get chroma(): number {
+    return this._chroma;
+  }
+
+  set chroma(newChroma: number) {
+    this._argb = HctSolver.solveToInt(this._hue, newChroma, this._tone);
+    const cam16 = Cam16.fromInt(this._argb);
+    this._hue = cam16.hue;
+    this._chroma = cam16.chroma;
+    this._tone = ColorUtils.lstarFromArgb(this._argb);
+  }
+
+  get tone(): number {
+    return this._tone;
+  }
+
+  set tone(newTone: number) {
+    this._argb = HctSolver.solveToInt(this._hue, this._chroma, newTone);
+    const cam16 = Cam16.fromInt(this._argb);
+    this._hue = cam16.hue;
+    this._chroma = cam16.chroma;
+    this._tone = ColorUtils.lstarFromArgb(this._argb);
+  }
+
+  equals(other: unknown): boolean {
+    return other instanceof HueChromaTone && this._argb === other._argb;
+  }
+
+  hashCode(): number {
+    return this._argb;
+  }
+
+  toString(): string {
+    return `H${Math.round(this._hue)} C${Math.round(this._chroma)} T${Math.round(this._tone)}`;
+  }
+
+  inViewingConditions(vc: ViewingConditions): HueChromaTone {
+    const cam16 = Cam16.fromInt(this.toInt());
+    const viewedInVc = cam16.xyzInViewingConditions(vc);
+    const recastInVc = Cam16.fromXyzInViewingConditions(
+      viewedInVc[0]!,
+      viewedInVc[1]!,
+      viewedInVc[2]!,
+      ViewingConditions.make()
+    );
+    return HueChromaTone.from(
+      recastInVc.hue,
+      recastInVc.chroma,
+      ColorUtils.lstarFromY(viewedInVc[1]!)
+    );
   }
 }
 
