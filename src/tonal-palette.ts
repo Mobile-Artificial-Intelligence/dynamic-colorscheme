@@ -86,10 +86,9 @@ class TonalPalette {
     if (this.cache.has(tone)) {
       return this.cache.get(tone)!;
     }
-    const hct = new HueChromaTone(this.hue, this.chroma, tone);
-    const colorInt = Color.fromHtc(hct).toInt();
-    this.cache.set(tone, colorInt);
-    return colorInt;
+    const hct = new HueChromaTone(this.hue, this.chroma, tone).toInt();
+    this.cache.set(tone, hct);
+    return hct;
   }
 
   getHct(tone: number): HueChromaTone {
