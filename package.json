@@ -1,13 +1,15 @@
 {
   "name": "dynamic-colorscheme",
   "version": "1.0.0",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "prepare": "npm run build"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["colors", "material-design", "theme", "dynamic", "color-scheme"],
+  "author": "Dane Madsen",
+  "license": "MIT",
   "description": "An implementation of the Material Colorscheme from Flutter in TypeScript.",
   "devDependencies": {
     "@types/node": "^24.3.3",
