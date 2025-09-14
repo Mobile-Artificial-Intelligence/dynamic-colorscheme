@@ -8,7 +8,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "An implementation of the Material Colorscheme from Flutter in TypeScript.",
   "devDependencies": {
     "@types/node": "^24.3.3",
     "eslint": "^9.35.0",
