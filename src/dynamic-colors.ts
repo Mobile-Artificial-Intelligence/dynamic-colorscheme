@@ -1,3 +1,4 @@
+import ContrastCurve from "./contrast-curve";
 import DynamicColor from "./dynamic-color";
 import DynamicScheme from "./dynamic-scheme";
 
@@ -37,5 +38,20 @@ class DynamicColors {
     tone: (s) => s.neutralVariantPalette.keyColor.tone,
   });
 
-  
+  static background = DynamicColor.fromPalette({
+    name: 'background',
+    palette: (s) => s.neutralPalette,
+    tone: (s) => s.isDark ? 6 : 98,
+    isBackground: true,
+  });
+
+  static onBackground = DynamicColor.fromPalette({
+    name: 'on_background',
+    palette: (s) => s.neutralPalette,
+    tone: (s) => s.isDark ? 90 : 10,
+    background: (s) => DynamicColors.background,
+    contrastCurve: new ContrastCurve(3, 3, 4.5, 7),
+  });
 }
+
+export default DynamicColors;
