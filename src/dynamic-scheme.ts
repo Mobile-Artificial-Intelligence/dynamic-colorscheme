@@ -2,14 +2,7 @@ import HueChromaTone from "./hue-chroma-tone";
 import TonalPalette from "./tonal-palette";
 import DynamicColor from "./dynamic-color";
 import DynamicColors from "./dynamic-colors";
-
-function sanitizeDegreesDouble(degrees: number): number {
-  degrees = degrees % 360.0;
-  if (degrees < 0) {
-    degrees = degrees + 360.0;
-  }
-  return degrees;
-}
+import { sanitizeDegreesDouble } from "./utilities";
 
 export type Variant =
   | "monochrome"
