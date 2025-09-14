@@ -1,6 +1,7 @@
 import ContrastCurve from "./contrast-curve";
 import DynamicColor from "./dynamic-color";
 import DynamicScheme from "./dynamic-scheme";
+import HueChromaTone from "./hue-chroma-tone";
 import ToneDeltaPair from "./tone-delta-pair";
 
 function isFidelity(s: DynamicScheme): boolean {
@@ -9,6 +10,39 @@ function isFidelity(s: DynamicScheme): boolean {
 
 function isMonochrome(s: DynamicScheme): boolean {
   return s.variant === "monochrome";
+}
+
+function findDesiredChromaByTone(
+    hue: number,
+    chroma: number,
+    tone: number,
+    byDecreasingTone: boolean
+  ): number {
+    let answer = tone;
+    let closestToChroma = new HueChromaTone(hue, chroma, tone);
+
+    if (closestToChroma.chroma < chroma) {
+      let chromaPeak = closestToChroma.chroma;
+
+      while (closestToChroma.chroma < chroma) {
+        answer += byDecreasingTone ? -1.0 : 1.0;
+
+        const potentialSolution = new HueChromaTone(hue, chroma, answer);
+        if (chromaPeak > potentialSolution.chroma) break;
+        if (Math.abs(potentialSolution.chroma - chroma) < 0.4) break;
+
+        const potentialDelta = Math.abs(potentialSolution.chroma - chroma);
+        const currentDelta = Math.abs(closestToChroma.chroma - chroma);
+
+        if (potentialDelta < currentDelta) {
+          closestToChroma = potentialSolution;
+        }
+
+        chromaPeak = Math.max(chromaPeak, potentialSolution.chroma);
+      }
+    }
+
+    return answer;
 }
 
 class DynamicColors {
@@ -169,8 +203,6 @@ class DynamicColors {
     contrastCurve: new ContrastCurve(4.5, 7, 11, 21),
   });
 
-  // continuing inside DynamicColors class...
-
   static outline = DynamicColor.fromPalette({
     name: "outline",
     palette: (s) => s.neutralVariantPalette,
@@ -286,10 +318,18 @@ class DynamicColors {
     name: "secondary_container",
     palette: (s) => s.secondaryPalette,
     tone: (s) => {
+      const initialTone = s.isDark ? 30.0 : 90.0;
+  
       if (isMonochrome(s)) return s.isDark ? 30 : 85;
-      if (!isFidelity(s)) return s.isDark ? 30 : 90;
-      // fidelity: approximate _findDesiredChromaByTone logic
-      return s.isDark ? 30 : 90;
+      if (!isFidelity(s)) return initialTone;
+  
+      // fidelity path → adjust tone to reach desired chroma
+      return findDesiredChromaByTone(
+        s.secondaryPalette.hue,
+        s.secondaryPalette.chroma,
+        initialTone,
+        !s.isDark // byDecreasingTone = false for light mode
+      );
     },
     isBackground: true,
     background: (s) => DynamicColors.highestSurface(s),
