@@ -60,7 +60,7 @@ class DynamicColor {
   }
 
   getArgb(scheme: DynamicScheme): number {
-    return this.getHct(scheme).tone; // ⚠️ You’ll likely want `.toInt()` if you implement it in HueChromaTone
+    return this.getHct(scheme).toInt();
   }
 
   getHct(scheme: DynamicScheme): HueChromaTone {
@@ -80,28 +80,143 @@ class DynamicColor {
   }
 
   getTone(scheme: DynamicScheme): number {
-    const decreasingContrast = (scheme as any).contrastLevel < 0; // you’ll need to add `contrastLevel` + `isDark` to DynamicScheme
-
-    // TODO: implement the full Dart logic here (toneDeltaPair handling, dual backgrounds, awkward zone fix, etc.)
-    // For now, simplest case:
+    const decreasingContrast = scheme.contrastLevel < 0;
+  
+    // Case 1: dual foreground, pair of colors with delta constraint
+    if (this.toneDeltaPair) {
+      const pair = this.toneDeltaPair(scheme);
+      const roleA = pair.roleA;
+      const roleB = pair.roleB;
+      const delta = pair.delta;
+      const polarity = pair.polarity;
+      const stayTogether = pair.stayTogether;
+  
+      const bg = this.background!(scheme);
+      const bgTone = bg.getTone(scheme);
+  
+      const aIsNearer =
+        polarity === "nearer" ||
+        (polarity === "lighter" && !scheme.isDark) ||
+        (polarity === "darker" && scheme.isDark);
+      const nearer = aIsNearer ? roleA : roleB;
+      const farther = aIsNearer ? roleB : roleA;
+      const amNearer = this.name === nearer.name;
+      const expansionDir = scheme.isDark ? 1 : -1;
+  
+      // 1st round: solve to min, each
+      const nContrast = nearer.contrastCurve!.get(scheme.contrastLevel);
+      const fContrast = farther.contrastCurve!.get(scheme.contrastLevel);
+  
+      // Initial + adjusted tones
+      const nInitialTone = nearer.tone(scheme);
+      let nTone =
+        Contrast.ratioOfTones(bgTone, nInitialTone) >= nContrast
+          ? nInitialTone
+          : DynamicColor.foregroundTone(bgTone, nContrast);
+  
+      const fInitialTone = farther.tone(scheme);
+      let fTone =
+        Contrast.ratioOfTones(bgTone, fInitialTone) >= fContrast
+          ? fInitialTone
+          : DynamicColor.foregroundTone(bgTone, fContrast);
+  
+      if (decreasingContrast) {
+        nTone = DynamicColor.foregroundTone(bgTone, nContrast);
+        fTone = DynamicColor.foregroundTone(bgTone, fContrast);
+      }
+  
+      if ((fTone - nTone) * expansionDir < delta) {
+        // expand farther
+        fTone = Math.max(0, Math.min(100, nTone + delta * expansionDir));
+        if ((fTone - nTone) * expansionDir < delta) {
+          // contract nearer
+          nTone = Math.max(0, Math.min(100, fTone - delta * expansionDir));
+        }
+      }
+  
+      // Avoid awkward 50–59 zone
+      if (50 <= nTone && nTone < 60) {
+        if (expansionDir > 0) {
+          nTone = 60;
+          fTone = Math.max(fTone, nTone + delta * expansionDir);
+        } else {
+          nTone = 49;
+          fTone = Math.min(fTone, nTone + delta * expansionDir);
+        }
+      } else if (50 <= fTone && fTone < 60) {
+        if (stayTogether) {
+          if (expansionDir > 0) {
+            nTone = 60;
+            fTone = Math.max(fTone, nTone + delta * expansionDir);
+          } else {
+            nTone = 49;
+            fTone = Math.min(fTone, nTone + delta * expansionDir);
+          }
+        } else {
+          fTone = expansionDir > 0 ? 60 : 49;
+        }
+      }
+  
+      return amNearer ? nTone : fTone;
+    }
+  
+    // Case 2: no pair — solve for itself
     let answer = this.tone(scheme);
-
-    if (!this.background || !this.contrastCurve) {
+    if (!this.background) {
       return answer;
     }
-
+  
     const bgTone = this.background(scheme).getTone(scheme);
-    const desiredRatio = this.contrastCurve.get((scheme as any).contrastLevel);
-
-    // If not enough contrast, adjust foreground tone
+    const desiredRatio = this.contrastCurve!.get(scheme.contrastLevel);
+  
     if (Contrast.ratioOfTones(bgTone, answer) < desiredRatio) {
       answer = DynamicColor.foregroundTone(bgTone, desiredRatio);
     }
-
+  
     if (decreasingContrast) {
       answer = DynamicColor.foregroundTone(bgTone, desiredRatio);
     }
-
+  
+    if (this.isBackground && 50 <= answer && answer < 60) {
+      answer =
+        Contrast.ratioOfTones(49, bgTone) >= desiredRatio ? 49 : 60;
+    }
+  
+    // Case 3: adjust for dual backgrounds
+    if (this.secondaryBackground) {
+      const bgTone1 = this.background(scheme).getTone(scheme);
+      const bgTone2 = this.secondaryBackground(scheme).getTone(scheme);
+  
+      const upper = Math.max(bgTone1, bgTone2);
+      const lower = Math.min(bgTone1, bgTone2);
+  
+      if (
+        Contrast.ratioOfTones(upper, answer) >= desiredRatio &&
+        Contrast.ratioOfTones(lower, answer) >= desiredRatio
+      ) {
+        return answer;
+      }
+  
+      const lightOption = Contrast.lighter(upper, desiredRatio);
+      const darkOption = Contrast.darker(lower, desiredRatio);
+  
+      const availables: number[] = [];
+      if (lightOption !== -1) availables.push(lightOption);
+      if (darkOption !== -1) availables.push(darkOption);
+  
+      const prefersLight =
+        DynamicColor.tonePrefersLightForeground(bgTone1) ||
+        DynamicColor.tonePrefersLightForeground(bgTone2);
+  
+      if (prefersLight) {
+        return lightOption < 0 ? 100 : lightOption;
+      }
+      if (availables.length === 1) {
+        return availables[0]!;
+      }
+      return darkOption < 0 ? 0 : darkOption;
+    }
+  
     return answer;
   }
 
