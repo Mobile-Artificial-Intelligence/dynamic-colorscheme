@@ -69,7 +69,7 @@ class DynamicColor {
     }
 
     const tone = this.getTone(scheme);
-    const hct = this.palette(scheme).getHtc(tone);
+    const hct = this.palette(scheme).getHct(tone);
 
     if (this.hctCache.size > 4) {
       this.hctCache.clear();

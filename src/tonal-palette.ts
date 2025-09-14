@@ -92,7 +92,7 @@ class TonalPalette {
     return colorInt;
   }
 
-  getHtc(tone: number): HueChromaTone {
+  getHct(tone: number): HueChromaTone {
     if (this.cache.has(tone)) {
       return HueChromaTone.fromColor(Color.fromInt(this.cache.get(tone)!));
     }

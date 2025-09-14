@@ -1,3 +1,4 @@
+import HueChromaTone from "./hue-chroma-tone";
 import TonalPalette from "./tonal-palette";
 
 export type Variant =
@@ -12,9 +13,13 @@ export type Variant =
   | "fruit-salad";
 
 class DynamicScheme {
+  sourceColorArgb: number;
+  sourceColorHct: HueChromaTone;
+
   variant: Variant;
   isDark: boolean;
-  contrastLevel: number; // -1.0 → 1.0
+  contrastLevel: number;
+
   primaryPalette: TonalPalette;
   secondaryPalette: TonalPalette;
   tertiaryPalette: TonalPalette;
@@ -23,6 +28,7 @@ class DynamicScheme {
   errorPalette: TonalPalette;
 
   constructor(
+    sourceColorArgb: number,
     variant: Variant,
     isDark: boolean,
     primary: TonalPalette,
@@ -30,18 +36,21 @@ class DynamicScheme {
     tertiary: TonalPalette,
     neutral: TonalPalette,
     neutralVariant: TonalPalette,
-    error: TonalPalette,
-    contrastLevel: number = 0.0 // default: standard
+    contrastLevel: number = 0.0
   ) {
+    this.sourceColorArgb = sourceColorArgb;
+    this.sourceColorHct = HueChromaTone.fromInt(sourceColorArgb);
+
     this.variant = variant;
     this.isDark = isDark;
+    this.contrastLevel = contrastLevel;
+
     this.primaryPalette = primary;
     this.secondaryPalette = secondary;
     this.tertiaryPalette = tertiary;
     this.neutralPalette = neutral;
     this.neutralVariantPalette = neutralVariant;
-    this.errorPalette = error;
-    this.contrastLevel = contrastLevel;
+    this.errorPalette = TonalPalette.of(25.0, 84.0); // matches Dart
   }
 }
 

@@ -167,6 +167,224 @@ class DynamicColors {
     background: (s) => DynamicColors.inverseSurface,
     contrastCurve: new ContrastCurve(4.5, 7, 11, 21),
   });
+
+  // continuing inside DynamicColors class...
+
+  static outline = DynamicColor.fromPalette({
+    name: "outline",
+    palette: (s) => s.neutralVariantPalette,
+    tone: (s) => (s.isDark ? 60 : 50),
+    background: (s) => DynamicColors.highestSurface(s),
+    contrastCurve: new ContrastCurve(1.5, 3, 4.5, 7),
+  });
+
+  static outlineVariant = DynamicColor.fromPalette({
+    name: "outline_variant",
+    palette: (s) => s.neutralVariantPalette,
+    tone: (s) => (s.isDark ? 30 : 80),
+    background: (s) => DynamicColors.highestSurface(s),
+    contrastCurve: new ContrastCurve(1, 1, 3, 4.5),
+  });
+
+  static shadow = DynamicColor.fromPalette({
+    name: "shadow",
+    palette: (s) => s.neutralPalette,
+    tone: () => 0,
+  });
+
+  static scrim = DynamicColor.fromPalette({
+    name: "scrim",
+    palette: (s) => s.neutralPalette,
+    tone: () => 0,
+  });
+
+  static surfaceTint = DynamicColor.fromPalette({
+    name: "surface_tint",
+    palette: (s) => s.primaryPalette,
+    tone: (s) => (s.isDark ? 80 : 40),
+    isBackground: true,
+  });
+
+  static primary = DynamicColor.fromPalette({
+    name: "primary",
+    palette: (s) => s.primaryPalette,
+    tone: (s) => {
+      if (isMonochrome(s)) return s.isDark ? 100 : 0;
+      return s.isDark ? 80 : 40;
+    },
+    isBackground: true,
+    background: (s) => DynamicColors.highestSurface(s),
+    contrastCurve: new ContrastCurve(3, 4.5, 7, 7),
+    // toneDeltaPair: (s) => new ToneDeltaPair(DynamicColors.primaryContainer, DynamicColors.primary, 10, "nearer", false),
+  });
+
+  static onPrimary = DynamicColor.fromPalette({
+    name: "on_primary",
+    palette: (s) => s.primaryPalette,
+    tone: (s) => {
+      if (isMonochrome(s)) return s.isDark ? 10 : 90;
+      return s.isDark ? 20 : 100;
+    },
+    background: (s) => DynamicColors.primary,
+    contrastCurve: new ContrastCurve(4.5, 7, 11, 21),
+  });
+
+  static primaryContainer = DynamicColor.fromPalette({
+    name: "primary_container",
+    palette: (s) => s.primaryPalette,
+    tone: (s) => {
+      if (isFidelity(s)) return s.sourceColorHct.tone;
+      if (isMonochrome(s)) return s.isDark ? 85 : 25;
+      return s.isDark ? 30 : 90;
+    },
+    isBackground: true,
+    background: (s) => DynamicColors.highestSurface(s),
+    contrastCurve: new ContrastCurve(1, 1, 3, 4.5),
+  });
+
+  static onPrimaryContainer = DynamicColor.fromPalette({
+    name: "on_primary_container",
+    palette: (s) => s.primaryPalette,
+    tone: (s) => {
+      if (isFidelity(s)) {
+        return DynamicColor.foregroundTone(DynamicColors.primaryContainer.tone(s), 4.5);
+      }
+      if (isMonochrome(s)) return s.isDark ? 0 : 100;
+      return s.isDark ? 90 : 10;
+    },
+    background: (s) => DynamicColors.primaryContainer,
+    contrastCurve: new ContrastCurve(4.5, 7, 11, 21),
+  });
+
+  static inversePrimary = DynamicColor.fromPalette({
+    name: "inverse_primary",
+    palette: (s) => s.primaryPalette,
+    tone: (s) => (s.isDark ? 40 : 80),
+    background: (s) => DynamicColors.inverseSurface,
+    contrastCurve: new ContrastCurve(3, 4.5, 7, 7),
+  });
+
+  static secondary = DynamicColor.fromPalette({
+    name: "secondary",
+    palette: (s) => s.secondaryPalette,
+    tone: (s) => (s.isDark ? 80 : 40),
+    isBackground: true,
+    background: (s) => DynamicColors.highestSurface(s),
+    contrastCurve: new ContrastCurve(3, 4.5, 7, 7),
+  });
+
+  static onSecondary = DynamicColor.fromPalette({
+    name: "on_secondary",
+    palette: (s) => s.secondaryPalette,
+    tone: (s) => (isMonochrome(s) ? (s.isDark ? 10 : 100) : s.isDark ? 20 : 100),
+    background: (s) => DynamicColors.secondary,
+    contrastCurve: new ContrastCurve(4.5, 7, 11, 21),
+  });
+
+  static secondaryContainer = DynamicColor.fromPalette({
+    name: "secondary_container",
+    palette: (s) => s.secondaryPalette,
+    tone: (s) => {
+      if (isMonochrome(s)) return s.isDark ? 30 : 85;
+      if (!isFidelity(s)) return s.isDark ? 30 : 90;
+      // fidelity: approximate _findDesiredChromaByTone logic
+      return s.isDark ? 30 : 90;
+    },
+    isBackground: true,
+    background: (s) => DynamicColors.highestSurface(s),
+    contrastCurve: new ContrastCurve(1, 1, 3, 4.5),
+  });
+
+  static onSecondaryContainer = DynamicColor.fromPalette({
+    name: "on_secondary_container",
+    palette: (s) => s.secondaryPalette,
+    tone: (s) => {
+      if (!isFidelity(s)) return s.isDark ? 90 : 10;
+      return DynamicColor.foregroundTone(DynamicColors.secondaryContainer.tone(s), 4.5);
+    },
+    background: (s) => DynamicColors.secondaryContainer,
+    contrastCurve: new ContrastCurve(4.5, 7, 11, 21),
+  });
+
+  static tertiary = DynamicColor.fromPalette({
+    name: "tertiary",
+    palette: (s) => s.tertiaryPalette,
+    tone: (s) => {
+      if (isMonochrome(s)) return s.isDark ? 90 : 25;
+      return s.isDark ? 80 : 40;
+    },
+    isBackground: true,
+    background: (s) => DynamicColors.highestSurface(s),
+    contrastCurve: new ContrastCurve(3, 4.5, 7, 7),
+  });
+
+  static onTertiary = DynamicColor.fromPalette({
+    name: "on_tertiary",
+    palette: (s) => s.tertiaryPalette,
+    tone: (s) => (isMonochrome(s) ? (s.isDark ? 10 : 90) : s.isDark ? 20 : 100),
+    background: (s) => DynamicColors.tertiary,
+    contrastCurve: new ContrastCurve(4.5, 7, 11, 21),
+  });
+
+  static tertiaryContainer = DynamicColor.fromPalette({
+    name: "tertiary_container",
+    palette: (s) => s.tertiaryPalette,
+    tone: (s) => {
+      if (isMonochrome(s)) return s.isDark ? 60 : 49;
+      if (!isFidelity(s)) return s.isDark ? 30 : 90;
+      return s.tertiaryPalette.getHct(s.sourceColorHct.tone).tone; // ignoring dislike analyzer for now
+    },
+    isBackground: true,
+    background: (s) => DynamicColors.highestSurface(s),
+    contrastCurve: new ContrastCurve(1, 1, 3, 4.5),
+  });
+
+  static onTertiaryContainer = DynamicColor.fromPalette({
+    name: "on_tertiary_container",
+    palette: (s) => s.tertiaryPalette,
+    tone: (s) => {
+      if (isMonochrome(s)) return s.isDark ? 0 : 100;
+      if (!isFidelity(s)) return s.isDark ? 90 : 10;
+      return DynamicColor.foregroundTone(DynamicColors.tertiaryContainer.tone(s), 4.5);
+    },
+    background: (s) => DynamicColors.tertiaryContainer,
+    contrastCurve: new ContrastCurve(4.5, 7, 11, 21),
+  });
+
+  static error = DynamicColor.fromPalette({
+    name: "error",
+    palette: (s) => s.errorPalette,
+    tone: (s) => (s.isDark ? 80 : 40),
+    isBackground: true,
+    background: (s) => DynamicColors.highestSurface(s),
+    contrastCurve: new ContrastCurve(3, 4.5, 7, 7),
+  });
+
+  static onError = DynamicColor.fromPalette({
+    name: "on_error",
+    palette: (s) => s.errorPalette,
+    tone: (s) => (s.isDark ? 20 : 100),
+    background: (s) => DynamicColors.error,
+    contrastCurve: new ContrastCurve(4.5, 7, 11, 21),
+  });
+
+  static errorContainer = DynamicColor.fromPalette({
+    name: "error_container",
+    palette: (s) => s.errorPalette,
+    tone: (s) => (s.isDark ? 30 : 90),
+    isBackground: true,
+    background: (s) => DynamicColors.highestSurface(s),
+    contrastCurve: new ContrastCurve(1, 1, 3, 4.5),
+  });
+
+  static onErrorContainer = DynamicColor.fromPalette({
+    name: "on_error_container",
+    palette: (s) => s.errorPalette,
+    tone: (s) => (s.isDark ? 90 : 10),
+    background: (s) => DynamicColors.errorContainer,
+    contrastCurve: new ContrastCurve(4.5, 7, 11, 21),
+  });
+
 }
 
 export default DynamicColors;

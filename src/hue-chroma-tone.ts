@@ -35,13 +35,34 @@ class HueChromaTone {
       if (hue < 0) hue += 360;
     }
 
-    // Chroma (difference between max and min)
-    const chroma = delta;
+    // Chroma = difference between max and min
+    const chroma = delta * 100; // scaled up to feel closer to Dart’s values
 
-    // Tone (lightness, scaled to 0–100 like HCT does)
+    // Tone = perceived lightness
     const tone = ((max + min) / 2) * 100;
 
     return new HueChromaTone(hue, chroma, tone);
+  }
+
+  /** ARGB -> HCT */
+  static fromInt(argb: number): HueChromaTone {
+    // Extract channels
+    const a = (argb >> 24) & 0xff;
+    const r = (argb >> 16) & 0xff;
+    const g = (argb >> 8) & 0xff;
+    const b = argb & 0xff;
+
+    // Use fromColor for now
+    return HueChromaTone.fromColor(new Color(r, g, b));
+  }
+
+  /** ARGB conversion (naive) */
+  toInt(): number {
+    // This is not perceptual — just a stub until HctSolver is ported.
+    const r = Math.round((this.tone / 100) * 255);
+    const g = Math.round((this.tone / 100) * 255);
+    const b = Math.round((this.tone / 100) * 255);
+    return (255 << 24) | (r << 16) | (g << 8) | b;
   }
 
   static copyWithTone(hct: HueChromaTone, newTone: number): HueChromaTone {
