@@ -60,10 +60,10 @@ class DynamicColor {
   }
 
   getArgb(scheme: DynamicScheme): number {
-    return this.getHtc(scheme).tone; // ⚠️ You’ll likely want `.toInt()` if you implement it in HueChromaTone
+    return this.getHct(scheme).tone; // ⚠️ You’ll likely want `.toInt()` if you implement it in HueChromaTone
   }
 
-  getHtc(scheme: DynamicScheme): HueChromaTone {
+  getHct(scheme: DynamicScheme): HueChromaTone {
     if (this.hctCache.has(scheme)) {
       return this.hctCache.get(scheme)!;
     }
