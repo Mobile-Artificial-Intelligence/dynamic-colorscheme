@@ -1,6 +1,7 @@
 import ContrastCurve from "./contrast-curve";
 import DynamicColor from "./dynamic-color";
 import DynamicScheme from "./dynamic-scheme";
+import ToneDeltaPair from "./tone-delta-pair";
 
 function isFidelity(s: DynamicScheme): boolean {
   return s.variant === "fidelity" || s.variant === "content";
@@ -215,7 +216,7 @@ class DynamicColors {
     isBackground: true,
     background: (s) => DynamicColors.highestSurface(s),
     contrastCurve: new ContrastCurve(3, 4.5, 7, 7),
-    // toneDeltaPair: (s) => new ToneDeltaPair(DynamicColors.primaryContainer, DynamicColors.primary, 10, "nearer", false),
+    toneDeltaPair: (s) => new ToneDeltaPair(DynamicColors.primaryContainer, DynamicColors.primary, 10, "nearer", false),
   });
 
   static onPrimary = DynamicColor.fromPalette({
@@ -332,7 +333,7 @@ class DynamicColors {
     tone: (s) => {
       if (isMonochrome(s)) return s.isDark ? 60 : 49;
       if (!isFidelity(s)) return s.isDark ? 30 : 90;
-      return s.tertiaryPalette.getHct(s.sourceColorHct.tone).tone; // ignoring dislike analyzer for now
+      return s.tertiaryPalette.getHct(s.sourceColorHct.tone).tone;
     },
     isBackground: true,
     background: (s) => DynamicColors.highestSurface(s),
@@ -385,6 +386,119 @@ class DynamicColors {
     contrastCurve: new ContrastCurve(4.5, 7, 11, 21),
   });
 
+  static primaryFixed = DynamicColor.fromPalette({
+    name: "primary_fixed",
+    palette: (s) => s.primaryPalette,
+    tone: (s) => (isMonochrome(s) ? 40.0 : 90.0),
+    isBackground: true,
+    background: (s) => DynamicColors.highestSurface(s),
+    contrastCurve: new ContrastCurve(1, 1, 3, 4.5),
+    toneDeltaPair: (s) => new ToneDeltaPair(DynamicColors.primaryFixed, DynamicColors.primaryFixedDim, 10, "lighter", true),
+  });
+
+  static primaryFixedDim = DynamicColor.fromPalette({
+    name: "primary_fixed_dim",
+    palette: (s) => s.primaryPalette,
+    tone: (s) => (isMonochrome(s) ? 30.0 : 80.0),
+    isBackground: true,
+    background: (s) => DynamicColors.highestSurface(s),
+    contrastCurve: new ContrastCurve(1, 1, 3, 4.5),
+    toneDeltaPair: (s) => new ToneDeltaPair(DynamicColors.primaryFixed, DynamicColors.primaryFixedDim, 10, "lighter", true),
+  });
+
+  static onPrimaryFixed = DynamicColor.fromPalette({
+    name: "on_primary_fixed",
+    palette: (s) => s.primaryPalette,
+    tone: (s) => (isMonochrome(s) ? 100.0 : 10.0),
+    background: (s) => DynamicColors.primaryFixedDim,
+    secondaryBackground: (s) => DynamicColors.primaryFixed,
+    contrastCurve: new ContrastCurve(4.5, 7, 11, 21),
+  });
+
+  static onPrimaryFixedVariant = DynamicColor.fromPalette({
+    name: "on_primary_fixed_variant",
+    palette: (s) => s.primaryPalette,
+    tone: (s) => (isMonochrome(s) ? 90.0 : 30.0),
+    background: (s) => DynamicColors.primaryFixedDim,
+    secondaryBackground: (s) => DynamicColors.primaryFixed,
+    contrastCurve: new ContrastCurve(3, 4.5, 7, 11),
+  });
+
+  static secondaryFixed = DynamicColor.fromPalette({
+    name: "secondary_fixed",
+    palette: (s) => s.secondaryPalette,
+    tone: (s) => (isMonochrome(s) ? 80.0 : 90.0),
+    isBackground: true,
+    background: (s) => DynamicColors.highestSurface(s),
+    contrastCurve: new ContrastCurve(1, 1, 3, 4.5),
+    toneDeltaPair: (s) => new ToneDeltaPair(DynamicColors.secondaryFixed, DynamicColors.secondaryFixedDim, 10, "lighter", true),
+  });
+
+  static secondaryFixedDim = DynamicColor.fromPalette({
+    name: "secondary_fixed_dim",
+    palette: (s) => s.secondaryPalette,
+    tone: (s) => (isMonochrome(s) ? 70.0 : 80.0),
+    isBackground: true,
+    background: (s) => DynamicColors.highestSurface(s),
+    contrastCurve: new ContrastCurve(1, 1, 3, 4.5),
+    toneDeltaPair: (s) => new ToneDeltaPair(DynamicColors.secondaryFixed, DynamicColors.secondaryFixedDim, 10, "lighter", true),
+  });
+
+  static onSecondaryFixed = DynamicColor.fromPalette({
+    name: "on_secondary_fixed",
+    palette: (s) => s.secondaryPalette,
+    tone: () => 10.0,
+    background: (s) => DynamicColors.secondaryFixedDim,
+    secondaryBackground: (s) => DynamicColors.secondaryFixed,
+    contrastCurve: new ContrastCurve(4.5, 7, 11, 21),
+  });
+
+  static onSecondaryFixedVariant = DynamicColor.fromPalette({
+    name: "on_secondary_fixed_variant",
+    palette: (s) => s.secondaryPalette,
+    tone: (s) => (isMonochrome(s) ? 25.0 : 30.0),
+    background: (s) => DynamicColors.secondaryFixedDim,
+    secondaryBackground: (s) => DynamicColors.secondaryFixed,
+    contrastCurve: new ContrastCurve(3, 4.5, 7, 11),
+  });
+
+  static tertiaryFixed = DynamicColor.fromPalette({
+    name: "tertiary_fixed",
+    palette: (s) => s.tertiaryPalette,
+    tone: (s) => (isMonochrome(s) ? 40.0 : 90.0),
+    isBackground: true,
+    background: (s) => DynamicColors.highestSurface(s),
+    contrastCurve: new ContrastCurve(1, 1, 3, 4.5),
+    toneDeltaPair: (s) => new ToneDeltaPair(DynamicColors.tertiaryFixed, DynamicColors.tertiaryFixedDim, 10, "lighter", true),
+  });
+
+  static tertiaryFixedDim = DynamicColor.fromPalette({
+    name: "tertiary_fixed_dim",
+    palette: (s) => s.tertiaryPalette,
+    tone: (s) => (isMonochrome(s) ? 30.0 : 80.0),
+    isBackground: true,
+    background: (s) => DynamicColors.highestSurface(s),
+    contrastCurve: new ContrastCurve(1, 1, 3, 4.5),
+    toneDeltaPair: (s) => new ToneDeltaPair(DynamicColors.tertiaryFixed, DynamicColors.tertiaryFixedDim, 10, "lighter", true),
+  });
+
+  static onTertiaryFixed = DynamicColor.fromPalette({
+    name: "on_tertiary_fixed",
+    palette: (s) => s.tertiaryPalette,
+    tone: (s) => (isMonochrome(s) ? 100.0 : 10.0),
+    background: (s) => DynamicColors.tertiaryFixedDim,
+    secondaryBackground: (s) => DynamicColors.tertiaryFixed,
+    contrastCurve: new ContrastCurve(4.5, 7, 11, 21),
+  });
+
+  static onTertiaryFixedVariant = DynamicColor.fromPalette({
+    name: "on_tertiary_fixed_variant",
+    palette: (s) => s.tertiaryPalette,
+    tone: (s) => (isMonochrome(s) ? 90.0 : 30.0),
+    background: (s) => DynamicColors.tertiaryFixedDim,
+    secondaryBackground: (s) => DynamicColors.tertiaryFixed,
+    contrastCurve: new ContrastCurve(3, 4.5, 7, 11),
+  });
 }
 
 export default DynamicColors;
