@@ -1,38 +1,15 @@
-function clampDouble(min: number, max: number, value: number): number {
-  return Math.min(max, Math.max(min, value));
-}
-
-function yFromLstar(lstar: number): number {
-  const ke = 8.0;
-  if (lstar > ke) {
-    const cube = (lstar + 16.0) / 116.0;
-    return cube * cube * cube * 100.0;
-  }
-  return (lstar / 903.2962962962963) * 100.0; // 24389/27 ≈ 903.296
-}
-
-function lstarFromY(y: number): number {
-  const e = 216.0 / 24389.0; // ≈ 0.008856
-  const k = 24389.0 / 27.0;  // ≈ 903.296
-  const yr = y / 100.0;
-
-  if (yr > e) {
-    return 116.0 * Math.cbrt(yr) - 16.0;
-  } else {
-    return k * yr;
-  }
-}
+import { ColorUtils, MathUtils } from "./utilities";
 
 class Contrast {
   /**
    * Returns a contrast ratio, which ranges from 1 to 21.
    */
   static ratioOfTones(toneA: number, toneB: number): number {
-    toneA = clampDouble(0.0, 100.0, toneA);
-    toneB = clampDouble(0.0, 100.0, toneB);
+    toneA = MathUtils.clampDouble(0.0, 100.0, toneA);
+    toneB = MathUtils.clampDouble(0.0, 100.0, toneB);
     return this._ratioOfYs(
-      yFromLstar(toneA),
-      yFromLstar(toneB)
+      ColorUtils.yFromLstar(toneA),
+      ColorUtils.yFromLstar(toneB)
     );
   }
 
@@ -49,13 +26,13 @@ class Contrast {
   static lighter(tone: number, ratio: number): number {
     if (tone < 0.0 || tone > 100.0) return -1.0;
 
-    const darkY = yFromLstar(tone);
+    const darkY = ColorUtils.yFromLstar(tone);
     const lightY = ratio * (darkY + 5.0) - 5.0;
     const realContrast = this._ratioOfYs(lightY, darkY);
     const delta = Math.abs(realContrast - ratio);
     if (realContrast < ratio && delta > 0.04) return -1;
 
-    const returnValue = lstarFromY(lightY) + 0.4;
+    const returnValue = ColorUtils.lstarFromY(lightY) + 0.4;
     if (returnValue < 0 || returnValue > 100) return -1;
     return returnValue;
   }
@@ -67,13 +44,13 @@ class Contrast {
   static darker(tone: number, ratio: number): number {
     if (tone < 0.0 || tone > 100.0) return -1.0;
 
-    const lightY = yFromLstar(tone);
+    const lightY = ColorUtils.yFromLstar(tone);
     const darkY = (lightY + 5.0) / ratio - 5.0;
     const realContrast = this._ratioOfYs(lightY, darkY);
     const delta = Math.abs(realContrast - ratio);
     if (realContrast < ratio && delta > 0.04) return -1;
 
-    const returnValue = lstarFromY(darkY) - 0.4;
+    const returnValue = ColorUtils.lstarFromY(darkY) - 0.4;
     if (returnValue < 0 || returnValue > 100) return -1;
     return returnValue;
   }
