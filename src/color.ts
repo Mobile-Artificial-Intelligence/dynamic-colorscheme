@@ -16,7 +16,7 @@ class Color {
       hex = hex.slice(1);
     }
 
-    if (hex.length !== 6) {
+    if (hex.length < 6 || hex.length > 8) {
       throw new Error("Invalid hex color format");
     }
 
