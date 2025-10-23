@@ -7,7 +7,13 @@
     "build": "tsc",
     "prepare": "npm run build"
   },
-  "keywords": ["colors", "material-design", "theme", "dynamic", "color-scheme"],
+  "keywords": [
+    "colors",
+    "material-design",
+    "theme",
+    "dynamic",
+    "color-scheme"
+  ],
   "author": "Dane Madsen",
   "license": "MIT",
   "description": "An implementation of the Material Colorscheme from Flutter in TypeScript.",
@@ -17,5 +23,8 @@
     "prettier": "^3.6.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@material/material-color-utilities": "^0.3.0"
   }
 }
